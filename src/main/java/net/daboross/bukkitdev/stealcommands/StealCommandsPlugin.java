@@ -16,11 +16,17 @@
  */
 package net.daboross.bukkitdev.stealcommands;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandException;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -39,21 +45,21 @@ public class StealCommandsPlugin extends JavaPlugin {
     }
 
     private void stealCommands() {
+        CommandExecutor real = new StealCommand();
         for (Plugin plugin : getServer().getPluginManager().getPlugins()) {
             if (plugin instanceof JavaPlugin) {
                 JavaPlugin javaPlugin = (JavaPlugin) plugin;
-                for (String name : plugin.getDescription().getCommands().keySet()) {
-                    PluginCommand pluginCommand = javaPlugin.getCommand(name);
-                    pluginCommand.setExecutor(this);
+                Map<String, ?> commandMap = plugin.getDescription().getCommands();
+                if (commandMap != null) {
+                    for (String name : commandMap.keySet()) {
+                        PluginCommand pluginCommand = javaPlugin.getCommand(name);
+                        if (pluginCommand != null) {
+                            pluginCommand.setExecutor(real);
+                        }
+                    }
                 }
             }
         }
-    }
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        sender.sendMessage(ChatColor.RED + "Trololololol.");
-        return true;
     }
 
     public class StealCommandsRunnable implements Runnable {
@@ -62,5 +68,37 @@ public class StealCommandsPlugin extends JavaPlugin {
         public void run() {
             StealCommandsPlugin.this.stealCommands();
         }
+    }
+
+    public static class StealCommand implements TabExecutor {
+
+        @Override
+        public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+            sender.sendMessage(rainbow("Trololololol."));
+            return true;
+        }
+
+        @Override
+        public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+            sender.sendMessage(rainbow("Trololololol."));
+            if (args.length == 0) {
+                return Arrays.asList(rainbow("I-am-a-terrible-troll"));
+            } else {
+                return Arrays.asList(args[args.length - 1] + rainbow("-that's-ok"));
+            }
+        }
+    }
+    private static int colorNum;
+    private static ChatColor[] colors = ChatColor.values();
+
+    private static String rainbow(String input) {
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            output.append(colors[colorNum++]).append(input.charAt(i));
+            if (colorNum >= colors.length) {
+                colorNum = 0;
+            }
+        }
+        return output.toString();
     }
 }
