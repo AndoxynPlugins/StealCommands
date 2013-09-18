@@ -16,42 +16,51 @@
  */
 package net.daboross.bukkitdev.stealcommands;
 
-import java.io.IOException;
-import java.util.logging.Level;
+import java.util.concurrent.TimeUnit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.PluginManager;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.mcstats.MetricsLite;
 
 /**
  *
  */
-public class StealCommandsPlugin extends JavaPlugin implements Listener {
+public class StealCommandsPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(this, this);
-        MetricsLite metrics = null;
-        try {
-            metrics = new MetricsLite(this);
-        } catch (IOException ex) {
-            getLogger().log(Level.WARNING, "Unable to create Metrics", ex);
-        }
-        if (metrics != null) {
-            metrics.start();
-        }
+        getServer().getScheduler().runTaskTimer(this, new StealCommandsRunnable(), 0, TimeUnit.MINUTES.toSeconds(14) * 20);
     }
 
     @Override
     public void onDisable() {
     }
 
+    private void stealCommands() {
+        for (Plugin plugin : getServer().getPluginManager().getPlugins()) {
+            if (plugin instanceof JavaPlugin) {
+                JavaPlugin javaPlugin = (JavaPlugin) plugin;
+                for (String name : plugin.getDescription().getCommands().keySet()) {
+                    PluginCommand pluginCommand = javaPlugin.getCommand(name);
+                    pluginCommand.setExecutor(this);
+                }
+            }
+        }
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        sender.sendMessage("StealCommands doesn't know about the command /" + cmd.getName());
+        sender.sendMessage(ChatColor.RED + "Trololololol.");
         return true;
+    }
+
+    public class StealCommandsRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            StealCommandsPlugin.this.stealCommands();
+        }
     }
 }
