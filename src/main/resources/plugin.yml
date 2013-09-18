@@ -1,0 +1,6 @@
+name: ${project.name}
+main: net.daboross.bukkitdev.stealcommands.StealCommandsPlugin
+version: ${project.version}
+author: Dabo Ross
+description: Steal all teh commands
+url: https://github.com/daboross/StealCommands
